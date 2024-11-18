@@ -1,3 +1,4 @@
+%global _lto_cflags %{nil}
 # For the curious:
 # 0.9.5a soversion = 0
 # 0.9.6  soversion = 1
@@ -22,7 +23,7 @@
 Summary: Compatibility version of the OpenSSL library
 Name: compat-openssl10
 Version: 1.0.2o
-Release: 4.1%{?dist}
+Release: 11%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -92,20 +93,22 @@ Patch99: openssl-1.0.2k-fips-randlock.patch
 Patch80: openssl-1.0.2o-wrap-pad.patch
 Patch81: openssl-1.0.2a-padlock64.patch
 Patch82: openssl-1.0.2m-trusted-first-doc.patch
-Patch83: openssl-1.0.2o-cve-2022-0778.patch
+Patch83: CVE-2018-0737.patch
+Patch84: CVE-2018-0732.patch
+Patch85: CVE-2018-0734.patch
+Patch86: CVE-2019-1552.patch
+Patch87: CVE-2019-1559.patch
 
 License: OpenSSL
-Group: System Environment/Libraries
 URL: http://www.openssl.org/
 BuildRequires: gcc
 BuildRequires: coreutils, perl-interpreter, perl-generators, sed, zlib-devel, /usr/bin/cmp
+BuildRequires: perl-File-Find-Rule, perl-File-Compare
 BuildRequires: lksctp-tools-devel
 BuildRequires: /usr/bin/rename
 BuildRequires: /usr/bin/pod2man
-BuildRequires: perl(File::Find)
-BuildRequires: perl(File::Compare)
-BuildRequires: perl(FileHandle)
-Requires: coreutils
+BuildRequires: perl-FileHandle
+Requires: coreutils, make
 Requires: crypto-policies
 Conflicts: openssl < 1:1.1.0, openssl-libs < 1:1.1.0
 
@@ -115,10 +118,9 @@ machines. This version of OpenSSL package contains only the libraries
 and is provided for compatibility with previous releases and software
 that does not support compilation with OpenSSL-1.1.
 
-%if 0%{?fedora} < 30 && 0%{?rhel} == 0
+
 %package devel
 Summary: Files for development of applications which have to use OpenSSL-1.0.2
-Group: Development/Libraries
 Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: zlib-devel%{?_isa}
 Requires: pkgconfig
@@ -135,7 +137,6 @@ and is provided for compatibility with previous releases and software
 that does not support compilation with OpenSSL-1.1. This package
 contains include files needed to develop applications which
 support various cryptographic algorithms and protocols.
-%endif
 
 %prep
 %setup -q -n openssl-%{version}
@@ -198,7 +199,11 @@ cp %{SOURCE12} %{SOURCE13} crypto/ec/
 %patch 80 -p1 -b .wrap
 %patch 81 -p1 -b .padlock64
 %patch 82 -p1 -b .trusted-first
-%patch 83 -p1 -b .cve-2022-0778
+%patch 83 -p1 -b .CVE-2018-0737
+%patch 84 -p1 -b .CVE-2018-0732
+%patch 85 -p1 -b .CVE-2018-0734
+%patch 86 -p1 -b .CVE-2019-1552
+%patch 87 -p1 -b .CVE-2019-1559
 
 sed -i 's/SHLIB_VERSION_NUMBER "1.0.0"/SHLIB_VERSION_NUMBER "%{version}"/' crypto/opensslv.h
 
@@ -284,13 +289,11 @@ sslarch=linux-generic64
     --enginesdir=%{_libdir}/openssl/engines \
     shared  ${sslarch} %{?!nofips:fips}
 
-# Remote LTO from RPM_OPT_FLAGS
-RPM_OPT_FLAGS=$(echo $RPM_OPT_FLAGS | sed 's,-flto=auto,,')
 # Add -Wa,--noexecstack here so that libcrypto's assembler modules will be
 # marked as not requiring an executable stack.
 # Also add -DPURIFY to make using valgrind with openssl easier as we do not
 # want to depend on the uninitialized memory as a source of entropy anyway.
-RPM_OPT_FLAGS="$RPM_OPT_FLAGS -Wa,--noexecstack -DPURIFY"
+RPM_OPT_FLAGS="$RPM_OPT_FLAGS -Wa,--noexecstack -Wa,--generate-missing-build-notes=yes -DPURIFY"
 make depend
 make all
 
@@ -382,14 +385,6 @@ rm -rf $RPM_BUILD_ROOT/%{_bindir}
 # Remove engines
 rm -rf $RPM_BUILD_ROOT/%{_libdir}/openssl
 
-%if 0%{?fedora} >= 30 || 0%{?rhel} != 0
-# Delete devel files
-rm -rf $RPM_BUILD_ROOT%{_includedir}/openssl
-rm -rf $RPM_BUILD_ROOT%{_mandir}/man3*
-rm -rf $RPM_BUILD_ROOT%{_libdir}/*.so
-rm -rf $RPM_BUILD_ROOT%{_libdir}/pkgconfig
-%endif
-
 # Install compat config file
 install -m 644 apps/openssl10.cnf $RPM_BUILD_ROOT%{_sysconfdir}/pki/openssl10.cnf
 
@@ -409,29 +404,47 @@ install -m 644 apps/openssl10.cnf $RPM_BUILD_ROOT%{_sysconfdir}/pki/openssl10.cn
 %dir %{_sysconfdir}/pki
 %attr(0644,root,root) %{_sysconfdir}/pki/openssl10.cnf
 
-%if 0%{?fedora} < 30 && 0%{?rhel} == 0
 %files devel
 %doc doc/c-indentation.el doc/openssl.txt CHANGES
 %{_prefix}/include/openssl
 %attr(0755,root,root) %{_libdir}/*.so
 %attr(0644,root,root) %{_mandir}/man3*/*
 %attr(0644,root,root) %{_libdir}/pkgconfig/*.pc
-%endif
 
-%post -p /sbin/ldconfig
-
-%postun -p /sbin/ldconfig
+%ldconfig_scriptlets
 
 %changelog
-* Fri Oct 14 2022 Mike Rochefort <mroche@redhat.com - 1:1.0.2o-4.1
-- Remove make runtime dependency
+* Sat Aug 01 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.0.2o-11
+- Second attempt - Rebuilt for
+  https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
-* Wed May 04 2022 Clemens Lang <cllang@redhat.com> - 1:1.0.2o-4
-- Fix CVE-2022-0778: Infinite loop in BN_mod_sqrt() reachable when parsing certificates
-  Resolves: rhbz#2077417
+* Mon Jul 27 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.0.2o-10
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+
+* Tue Jan 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.0.2o-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
+* Tue Sep 10 2019 Miro Hrončok <mhroncok@redhat.com> - 1:1.0.2o-8
+- Restore the devel package on Fedora 31 and 32 (#1673419)
+
+* Tue Sep 10 2019 Gwyn Ciesla <gwync@protonmail.com> - 1:1.0.2o-7
+- Patch for CVE-2018-0737, CVE-2018-0732, CVE-2018-0734, CVE-2019-1552, CVE-2019-1559
+
+* Wed Jul 24 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.0.2o-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
+
+* Fri Feb  8 2019 Tomáš Mráz <tmraz@redhat.com> 1.0.2o-5
+- Keep the compat-openssl10-devel for Fedora 30
+- Generate missing build notes for assembler sources
+
+* Thu Jan 31 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.0.2o-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 
 * Fri Aug  3 2018 Tomáš Mráz <tmraz@redhat.com> 1.0.2o-3
 - provide and use compat openssl10.cnf as the non-compat one is incompatible
+
+* Thu Jul 12 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.0.2o-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
 * Thu Apr  5 2018 Tomáš Mráz <tmraz@redhat.com> 1.0.2o-1
 - minor upstream release 1.0.2o fixing security issues
