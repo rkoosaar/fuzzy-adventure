@@ -147,63 +147,63 @@ support various cryptographic algorithms and protocols.
 
 cp %{SOURCE12} %{SOURCE13} crypto/ec/
 
-%patch 1 -p1 -b .rpmbuild
-%patch 2 -p1 -b .defaults
-%patch 4 -p1 -b .enginesdir %{?_rawbuild}
-%patch 5 -p1 -b .no-rpath
-%patch 6 -p1 -b .use-localhost
-%patch 7 -p1 -b .timezone
-%patch 8 -p1 -b .perlfind %{?_rawbuild}
-%patch 9 -p1 -b .aliasing
-%patch 10 -p1 -b .conf-10
+%patch1 -p1 -b .rpmbuild
+%patch2 -p1 -b .defaults
+%patch4 -p1 -b .enginesdir %{?_rawbuild}
+%patch5 -p1 -b .no-rpath
+%patch6 -p1 -b .use-localhost
+%patch7 -p1 -b .timezone
+%patch8 -p1 -b .perlfind %{?_rawbuild}
+%patch9 -p1 -b .aliasing
+%patch10 -p1 -b .conf-10
 
-%patch 23 -p1 -b .default-paths
-%patch 24 -p1 -b .issuer-hash
+%patch23 -p1 -b .default-paths
+%patch24 -p1 -b .issuer-hash
 
-%patch 33 -p1 -b .ca-dir
-%patch 34 -p1 -b .x509
-%patch 35 -p1 -b .version-add-engines
-%patch 39 -p1 -b .ipv6-apps
-%patch 40 -p1 -b .fips
-%patch 45 -p1 -b .env-zlib
-%patch 47 -p1 -b .warning
-%patch 49 -p1 -b .algo-doc
-%patch 50 -p1 -b .dtls1-abi
-%patch 51 -p1 -b .version
-%patch 56 -p1 -b .x931
-%patch 58 -p1 -b .md5-allow
-%patch 60 -p1 -b .dgst
-%patch 63 -p1 -b .starttls
-%patch 65 -p1 -b .chil
-%patch 66 -p1 -b .pkgconfig
-%patch 68 -p1 -b .secure-getenv
-%patch 70 -p1 -b .fips-ec
-%patch 71 -p1 -b .manfix
-%patch 72 -p1 -b .fips-ctor
-%patch 73 -p1 -b .suiteb
-%patch 74 -p1 -b .deprecate-algos
-%patch 75 -p1 -b .compat
-%patch 76 -p1 -b .fips-reqs
-%patch 77 -p1 -b .strength
-%patch 78 -p1 -b .cc-reqs
-%patch 90 -p1 -b .enc-fail
-%patch 92 -p1 -b .system
-%patch 93 -p1 -b .v2v3
-%patch 94 -p1 -b .secp256k1
-%patch 95 -p1 -b .nistp224
-%patch 96 -p1 -b .speed-doc
-%patch 97 -p1 -b .nokrb5-abi
-%patch 98 -p1 -b .long-hello
-%patch 99 -p1 -b .randlock
+%patch33 -p1 -b .ca-dir
+%patch34 -p1 -b .x509
+%patch35 -p1 -b .version-add-engines
+%patch39 -p1 -b .ipv6-apps
+%patch40 -p1 -b .fips
+%patch45 -p1 -b .env-zlib
+%patch47 -p1 -b .warning
+%patch49 -p1 -b .algo-doc
+%patch50 -p1 -b .dtls1-abi
+%patch51 -p1 -b .version
+%patch56 -p1 -b .x931
+%patch58 -p1 -b .md5-allow
+%patch60 -p1 -b .dgst
+%patch63 -p1 -b .starttls
+%patch65 -p1 -b .chil
+%patch66 -p1 -b .pkgconfig
+%patch68 -p1 -b .secure-getenv
+%patch70 -p1 -b .fips-ec
+%patch71 -p1 -b .manfix
+%patch72 -p1 -b .fips-ctor
+%patch73 -p1 -b .suiteb
+%patch74 -p1 -b .deprecate-algos
+%patch75 -p1 -b .compat
+%patch76 -p1 -b .fips-reqs
+%patch77 -p1 -b .strength
+%patch78 -p1 -b .cc-reqs
+%patch90 -p1 -b .enc-fail
+%patch92 -p1 -b .system
+%patch93 -p1 -b .v2v3
+%patch94 -p1 -b .secp256k1
+%patch95 -p1 -b .nistp224
+%patch96 -p1 -b .speed-doc
+%patch97 -p1 -b .nokrb5-abi
+%patch98 -p1 -b .long-hello
+%patch99 -p1 -b .randlock
 
-%patch 80 -p1 -b .wrap
-%patch 81 -p1 -b .padlock64
-%patch 82 -p1 -b .trusted-first
-%patch 83 -p1 -b .CVE-2018-0737
-%patch 84 -p1 -b .CVE-2018-0732
-%patch 85 -p1 -b .CVE-2018-0734
-%patch 86 -p1 -b .CVE-2019-1552
-%patch 87 -p1 -b .CVE-2019-1559
+%patch80 -p1 -b .wrap
+%patch81 -p1 -b .padlock64
+%patch82 -p1 -b .trusted-first
+%patch83 -p1 -b .CVE-2018-0737
+%patch84 -p1 -b .CVE-2018-0732
+%patch85 -p1 -b .CVE-2018-0734
+%patch86 -p1 -b .CVE-2019-1552
+%patch87 -p1 -b .CVE-2019-1559
 
 sed -i 's/SHLIB_VERSION_NUMBER "1.0.0"/SHLIB_VERSION_NUMBER "%{version}"/' crypto/opensslv.h
 
