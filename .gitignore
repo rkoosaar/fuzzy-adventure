@@ -1,5 +1,5 @@
-.build*.log
-clog
-000*.patch
-*.src.rpm
-*.tar.xz
+# .build*.log
+# clog
+# 000*.patch
+# *.src.rpm
+# *.tar.xz
